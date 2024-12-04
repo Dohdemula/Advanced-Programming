@@ -10,147 +10,144 @@ import java.util.List;
 /*
 * Client Code for accessing the Lecture1_adt.TransactionInterface.java module
  */
-public class Main {
+// Interface defining transaction methods
+interface TransactionInterface {
+    double getAmount();
+    Calendar getDate();
+    String getTransactionID();
+    void printTransactionDetails();
+    void apply(BankAccount ba);
+}
 
-    public static void testTransaction1() {
-        Calendar d1 = new GregorianCalendar(); // d1 is an Object [Objects are Reference types]
-        Lecture1_adt.Transaction1 t1 = new Lecture1_adt.Transaction1(1000, d1); // amount and d1 are arguments
+// Base Transaction Class
+abstract class BaseTransaction implements TransactionInterface {
+    private double amount;
+    private Calendar date;
+    private String transactionID;
 
-        System.out.println(t1.toString());
-        System.out.println("Lecture1_adt.TransactionInterface Amount: \t " + t1.amount);
-        System.out.println("Lecture1_adt.TransactionInterface Date: \t " + t1.date);
-
-        // Please note that the Client Codes can access the data in the class directly through the dot operator
-        // This kind of exposure is a threat to both the Representation Independence and Preservation of Invariants
+    public BaseTransaction(double amount, Calendar date, String transactionID) {
+        this.amount = amount;
+        this.date = date;
+        this.transactionID = transactionID;
     }
 
-
-    /** @return a transaction of same amount as t, one month later
-     * This is a PRODUCER of the class Lecture1_adt.Transaction2
-     * This code will help demostrate the Design exposures still present in transaction2 class
-     * */
-
-    public static Transaction2 makeNextPayment(Transaction2 t) {
-        Calendar d =  t.getDate();
-        d.add(Calendar.MONTH, 1);
-        return new Transaction2(t.getAmount(), d);
+    @Override
+    public double getAmount() {
+        return amount;
     }
 
-    /*
-    Testing Transaction2 class
-     */
-    public static void testTransaction2() {
-
-        Calendar d1 = new GregorianCalendar();
-
-        Lecture1_adt.Transaction2 t = new Lecture1_adt.Transaction2(1000, d1);
-
-        Lecture1_adt.Transaction2 modified_t = makeNextPayment(t);
-
-        System.out.println("\n\nState of the Object T1 After Client Code Tried to Change the Amount");
-        System.out.println("Lecture1_adt.TransactionInterface Amount: \t "+modified_t.getAmount());
-        System.out.println("Lecture1_adt.TransactionInterface Date: \t "+modified_t.getDate().getTime());
-
-        System.out.println("\n\nHow does T2 Look Like?????");
-        System.out.println("Lecture1_adt.TransactionInterface Amount: \t "+modified_t.getAmount());
-        System.out.println("Lecture1_adt.TransactionInterface Date: \t "+modified_t.getDate().getTime());
-
-        /* Please note that Although we have solved the problem of Transaction1
-        * And client code can no longer use the dot (.) operator to directly access the data
-        * There is still some exposure especially if we pass an object of a previous Transaction2 to create a new Transaction2 object
-         */
-
+    @Override
+    public Calendar getDate() {
+        return date;
     }
 
-
-    /** @return a list of 12 monthly payments of identical amounts
-     * This code will help demostrate the Design exposures still present in transaction3 class
-     * */
-    public static List<Transaction3> makeYearOfPayments (int amount) throws NullPointerException {
-
-        List<Transaction3> listOfTransaction3s = new ArrayList<Transaction3>();
-        Calendar date = new GregorianCalendar(2024, Calendar.JANUARY, 3);
-
-
-        for (int i = 0; i < 12; i++) {
-            listOfTransaction3s.add(new Transaction3(amount, date));
-            date.add(Calendar.MONTH, 1);
-        }
-        return listOfTransaction3s;
+    @Override
+    public String getTransactionID() {
+        return transactionID;
     }
 
-    /*
-    Testing Transaction3 class
-     */
-    public static void testTransaction3() {
-
-        List<Transaction3> allPaymentsIn2024 = makeYearOfPayments(1000);
-
-        for (Transaction3 t3 : allPaymentsIn2024) {
-
-            // Display all the 12 Transactions
-            for (Transaction3 transact : allPaymentsIn2024) {
-                System.out.println("\n\n  ::::::::::::::::::::::::::::::::::::::::::::\n");
-                System.out.println("Lecture1_adt.TransactionInterface Amount: \t "+transact.getAmount());
-                System.out.println("Lecture1_adt.TransactionInterface Date: \t "+transact.getDate().getTime());
-            }
-        }
-
-        /* Please Check all the 12 transactions displayed and hwo their dates look like
-         * Note that Although Transaction3 class resolves to an extent the exposure in Transaction2 class
-         * There is still some exposure especially if we pass an object of a previous Transaction3 to create a
-         * new Transaction3 object
-         */
+    @Override
+    public void printTransactionDetails() {
+        System.out.println("Transaction ID: " + transactionID);
+        System.out.println("Amount: " + amount);
+        System.out.println("Date: " + date.getTime());
     }
 
+    @Override
+    public abstract void apply(BankAccount ba);
+}
 
-    /** @return a list of 12 monthly payments of identical amounts
-     * This code Show that by judicious copying and defensive programming we eliminate the exposure in Transaction3
-     * As defined in the constructor of Transaction4 class
-     * */
-
-    public static List<Transaction4> makeYearOfPaymentsFinal (int amount) throws NullPointerException {
-
-        List<Transaction4> listOfTransaction4s = new ArrayList<Transaction4>();
-        Calendar date = new GregorianCalendar(2024, Calendar.JANUARY, 3);
-
-
-        for (int i = 0; i < 12; i++) {
-            listOfTransaction4s.add(new Transaction4(amount, date));
-            date.add(Calendar.MONTH, 1);
-        }
-        return listOfTransaction4s;
+// Deposit Transaction Class
+class DepositTransaction extends BaseTransaction {
+    public DepositTransaction(double amount, Calendar date, String transactionID) {
+        super(amount, date, transactionID);
     }
 
-    /*
-    Testing Transaction3 class
-     */
-    public static void testTransaction4() {
-
-        /*
-         * Call the function to make all the Twelve transaction in a year of our business
-         */
-
-        List<Transaction4> transactionsIn2024 = makeYearOfPaymentsFinal(1200);
-
-        // Display all the 12 Transactions
-        for (Transaction4 transact : transactionsIn2024) {
-            System.out.println("\n\n  ::::::::::::::::::::::::::::::::::::::::::::\n");
-            System.out.println("Lecture1_adt.TransactionInterface Amount: \t "+transact.getAmount());
-            System.out.println("Lecture1_adt.TransactionInterface Date: \t "+transact.getDate().getTime());
-        }
-
-        // Please Take a look at all the 12 transaction now and compare with the outputs of the Transaction3 class
-    }
-
-
-    public static void main(String[] args) {
-        // This is the client code
-        // Uncomment the following lines to test the class which you would like to test
-
-        // testTransaction1()
-        // testTransaction2()
-        // testTransaction3()
-        // testTransaction4()
+    @Override
+    public void apply(BankAccount ba) {
+        ba.deposit(getAmount());
+        System.out.println("Deposit of " + getAmount() + " applied.");
     }
 }
+
+// Withdrawal Transaction Class
+class WithdrawalTransaction extends BaseTransaction {
+    private double originalBalance;
+
+    public WithdrawalTransaction(double amount, Calendar date, String transactionID) {
+        super(amount, date, transactionID);
+    }
+
+    @Override
+    public void apply(BankAccount ba) {
+        try {
+            if (ba.getBalance() < getAmount()) {
+                throw new InsufficientFundsException("Insufficient funds for withdrawal.");
+            }
+            ba.withdraw(getAmount());
+            System.out.println("Withdrawal of " + getAmount() + " applied.");
+        } catch (InsufficientFundsException e) {
+            System.err.println(e.getMessage());
+        }
+    }
+
+    public void apply(BankAccount ba, boolean allowPartialWithdrawal) {
+        try {
+            if (ba.getBalance() >= getAmount()) {
+                ba.withdraw(getAmount());
+                System.out.println("Full withdrawal of " + getAmount() + " applied.");
+            } else if (allowPartialWithdrawal) {
+                double available = ba.getBalance();
+                ba.withdraw(available);
+                System.out.println("Partial withdrawal of " + available + " applied.");
+            } else {
+                throw new InsufficientFundsException("Insufficient funds for withdrawal.");
+            }
+        } catch (InsufficientFundsException e) {
+            System.err.println(e.getMessage());
+        } finally {
+            System.out.println("Transaction process completed.");
+        }
+    }
+
+    public boolean reverse(BankAccount ba) {
+        ba.deposit(getAmount());
+        System.out.println("Withdrawal of " + getAmount() + " reversed.");
+        return true;
+    }
+}
+
+// Custom Exception for Insufficient Funds
+class InsufficientFundsException extends Exception {
+    public InsufficientFundsException(String message) {
+        super(message);
+    }
+}
+
+// Bank Account Class
+class BankAccount {
+    private double balance;
+
+    public BankAccount(double initialBalance) {
+        this.balance = initialBalance;
+    }
+
+    public double getBalance() {
+        return balance;
+    }
+
+    public void deposit(double amount) {
+        balance += amount;
+        System.out.println("Deposited: " + amount + ". New Balance: " + balance);
+    }
+
+    public void withdraw(double amount) {
+        if (amount <= balance) {
+            balance -= amount;
+            System.out.println("Withdrew: " + amount + ". New Balance: " + balance);
+        } else {
+            System.out.println("Unable to withdraw " + amount + ". Insufficient balance.");
+        }
+    }
+}
+
